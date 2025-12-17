@@ -10,16 +10,15 @@
 #define UPPER_PRSURE_THRESHOLD      100 //Upper threshold value for Pressure in PSI
 #define LOWER_PRSURE_THRESHOLD      0   //Lower threshold value for pressure in PSI
 #define POLLING_TEMP_INTERVAL       2   //Temperature polling interval
-#define POLLING_PRSSR_INTERVAL      5   //Pressure Polling Interval
+#define POLLING_PRSSR_INTERVAL      4   //Pressure Polling Interval
 #define CHECKING_TEMP_INTERVAL      5   //Temperature Check interval
-#define CHECKING_PRSSR_INTERVAL     10   //Pressure Check interval
+#define CHECKING_PRSSR_INTERVAL     6   //Pressure Check interval
 
 #define POLLING_CONFIG_SIZE         2
 #define PROCESS_CONFIG_SIZE         2
 #define CALIB_CONST                 20
 
 #define SUCCESS 0
-#define DEBUG_INFO
 
 
 pthread_mutex_t lock = PTHREAD_MUTEX_INITIALIZER;
@@ -122,8 +121,8 @@ int wswReadPrsure( void )
 void* wvdPollingThread(void *arg)
 {
     int thread_id = *((int*)arg);
-    PollingThreadConfig wstPollingThreadConfig[POLLING_CONFIG_SIZE]= { { PARAM_TEMP, wswReadTemp, POLLING_TEMP_INTERVAL, 0},
-                                                                        { PARAM_PRESSURE, wswReadPrsure, POLLING_PRSSR_INTERVAL, 0} };
+    PollingThreadConfig wstPollingThreadConfig[POLLING_CONFIG_SIZE]= {  { PARAM_TEMP,       wswReadTemp,    POLLING_TEMP_INTERVAL,  0},
+                                                                        { PARAM_PRESSURE,   wswReadPrsure,  POLLING_PRSSR_INTERVAL, 0} };
     clock_t current_polltime        = 0;
     clock_t current_polltime_sec    = 0;
     int aiReadVal                   = 0;
@@ -154,8 +153,8 @@ void* wvdProcessingThread(void *arg)
 {
 
     int thread_id = *((int*)arg);
-    ProcessThreadConfig wstProcessThreadConfig[PROCESS_CONFIG_SIZE]= {  { PARAM_TEMP, LOWER_TEMP_THRESHOLD, UPPER_TEMP_THRESHOLD, CHECKING_TEMP_INTERVAL, 0},
-                                                                        { PARAM_PRESSURE, LOWER_PRSURE_THRESHOLD, UPPER_PRSURE_THRESHOLD, CHECKING_PRSSR_INTERVAL, 0} };
+    ProcessThreadConfig wstProcessThreadConfig[PROCESS_CONFIG_SIZE]= {  { PARAM_TEMP,       LOWER_TEMP_THRESHOLD,   UPPER_TEMP_THRESHOLD,   CHECKING_TEMP_INTERVAL,     0},
+                                                                        { PARAM_PRESSURE,   LOWER_PRSURE_THRESHOLD, UPPER_PRSURE_THRESHOLD, CHECKING_PRSSR_INTERVAL,    0} };
     clock_t current_processtime     = 0;
     clock_t current_processtime_sec = 0;
     int     aiReadVal               = 0;
@@ -211,7 +210,7 @@ int main( void )
     //Get the thread start time
     start =  clock();
     time_t rawtime;
-    struct tm *timeinfo;
+    struct tm *timeinfo = NULL;
 
     // Get the current time (seconds since the Unix epoch)
     time(&rawtime);
