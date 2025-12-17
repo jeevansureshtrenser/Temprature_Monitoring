@@ -3,6 +3,7 @@
 #include <pthread.h>
 #include <stdlib.h>
 #include <unistd.h>
+#include <sys/time.h>
 
 #define UPPER_TEMP_THRESHOLD        70  //Upper threshold value for temp in degrees Celsius
 #define LOWER_TEMP_THRESHOLD        -10 //Lower threshold value for temp in degrees Celsius
@@ -18,8 +19,19 @@
 #define CALIB_CONST                 20
 
 #define SUCCESS 0
+#define DEBUG_INFO
+
 
 pthread_mutex_t lock = PTHREAD_MUTEX_INITIALIZER;
+clock_t start;
+char date_buffer[11];
+
+typedef enum
+{
+    WARNING,
+    DEBUG,
+    INVALID
+}WarningType;
 
 typedef enum
 {
@@ -53,6 +65,46 @@ typedef struct
 
 CommonDatabase wstCommonDatabase;
 
+void printMessage( WarningType warningType_t, Parameter_type param_t, int iReadVal )
+{
+    clock_t current_time;
+    double elapsed;
+    clock_t current_time_sec;
+    clock_t current_milliseconds;
+    current_time = clock();
+    elapsed = (double)(current_time - start) / CLOCKS_PER_SEC;
+    current_time_sec = (int)elapsed;
+    current_milliseconds = (int)((elapsed - current_time_sec) * 1000);
+    switch( warningType_t )
+    {
+        case WARNING: 
+                        if( param_t == PARAM_TEMP )
+                        {
+                            printf("| %s | %6ld.%06ld | WARNING | TEMPERATURE | %3d degrees Celsius    | Out of range |\n", date_buffer, current_time_sec, current_milliseconds, iReadVal);
+                        }
+                        else if( param_t == PARAM_PRESSURE )
+                        {
+                            printf("| %s | %6ld.%06ld | WARNING | PRESSURE    | %3d PSI                | Out of range |\n", date_buffer, current_time_sec, current_milliseconds, iReadVal);
+                        }
+            break;
+        case DEBUG:
+                        if( param_t == PARAM_TEMP )
+                        {
+                            printf("| %s | %6ld.%06ld |  DEBUG  | TEMPERATURE | %3d degrees Celsius    |\n", date_buffer, current_time_sec, current_milliseconds, iReadVal);
+                        }
+                        else if( param_t == PARAM_PRESSURE )
+                        {
+                            printf("| %s | %6ld.%06ld |  DEBUG  | PRESSURE    | %3d PSI                |\n", date_buffer, current_time_sec, current_milliseconds, iReadVal);
+                        }
+            break;
+        case INVALID:
+                        printf("| %s | %6ld.%06ld |  DEBUG  | Invalid Operations |\n", date_buffer, current_time_sec, current_milliseconds );
+            break;
+        default:
+            break;
+    }
+}
+
 int wswReadTemp( void )
 {
     int max = UPPER_TEMP_THRESHOLD + CALIB_CONST;
@@ -76,7 +128,6 @@ void* wvdPollingThread(void *arg)
     clock_t current_polltime_sec    = 0;
     int aiReadVal                   = 0;
     int     iPollConfigCount        = 0;
-    clock_t start =  clock();
     while(1)
     {
         current_polltime = clock();
@@ -90,7 +141,9 @@ void* wvdPollingThread(void *arg)
                 wstCommonDatabase.iReadVal = aiReadVal;
                 wstCommonDatabase.param_t = wstPollingThreadConfig[iPollConfigCount].param_t;
                 pthread_mutex_unlock(&lock);
-                printf(" data %d, param %d \n", wstCommonDatabase.iReadVal, wstCommonDatabase.param_t );
+                #ifdef DEBUG_INFO
+                    printMessage(DEBUG, wstCommonDatabase.param_t, wstCommonDatabase.iReadVal);
+                #endif
                 wstPollingThreadConfig[iPollConfigCount].wiLastPollingTime = current_polltime_sec;
             }
         }
@@ -108,7 +161,6 @@ void* wvdProcessingThread(void *arg)
     int     aiReadVal               = 0;
     int     iPrcsConfigCount        = 0;
     Parameter_type param_get_type;
-    clock_t start =  clock();
     while(1)
     {
         pthread_mutex_lock(&lock);
@@ -130,11 +182,11 @@ void* wvdProcessingThread(void *arg)
                     {
                         switch( param_get_type )
                         {
-                            case PARAM_TEMP     : printf(" Read  Temp: %d   : out of range\n", aiReadVal);
+                            case PARAM_TEMP     : printMessage(WARNING, PARAM_TEMP, aiReadVal);
                                 break;
-                            case PARAM_PRESSURE : printf(" Read  Pressure: %d   : out of range\n", aiReadVal);
+                            case PARAM_PRESSURE : printMessage(WARNING, PARAM_PRESSURE, aiReadVal);
                                 break;
-                            default             : printf(" Invalid Parameter \n");
+                            default             : printMessage(INVALID, 0, 0);
                                 break;
                         }
 
@@ -156,21 +208,42 @@ int main( void )
     int iPollThreadID    = 1;
     int iProcessThreadID = 2;
 
+    //Get the thread start time
+    start =  clock();
+    time_t rawtime;
+    struct tm *timeinfo;
+
+    // Get the current time (seconds since the Unix epoch)
+    time(&rawtime);
+
+    // Convert to local time structure
+    timeinfo = localtime(&rawtime);
+
+    // Format the date into a string using strftime
+    // %Y = Year, %m = Month, %d = Day; format is YYYY-MM-DD
+    strftime(date_buffer, sizeof(date_buffer), "%Y-%m-%d", timeinfo);
+
     // Create thread for Polling
-    if (pthread_create(&pollingthread, NULL, wvdPollingThread, &iPollThreadID) != SUCCESS) 
+    if (pthread_create(&pollingthread, NULL, wvdPollingThread, &iPollThreadID) == SUCCESS) 
     { 
+        // Create thread for processing
+        if (pthread_create(&process_thread, NULL, wvdProcessingThread, &iProcessThreadID) == SUCCESS)
+        {
+            // Wait for both threads to finish 
+            pthread_join(pollingthread, NULL);
+            pthread_join(process_thread, NULL);
+        }
+        else
+        { 
+            printf("process thread");
+        }
+       
+    }
+    else
+    {
         printf(" pollingthread error");
     }
 
-    // Create thread for processing
-    if (pthread_create(&process_thread, NULL, wvdProcessingThread, &iProcessThreadID) != SUCCESS)
-    { 
-        printf("process thread");
-    }
-
-    // Wait for both threads to finish 
-    pthread_join(pollingthread, NULL);
-    pthread_join(process_thread, NULL);
     printf("Both threads finished execution.\n");
     return 0;
 }
