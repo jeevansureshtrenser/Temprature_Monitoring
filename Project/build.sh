@@ -1,3 +1,8 @@
+#**************************************************************
+# Author 	: Jeevan Suresh
+# License   : 
+#**************************************************************
+
 # Exit immediately if a command fails 
 set -e 
 # Project root (adjust if needed) 
@@ -14,3 +19,5 @@ mkdir build
 # Run make echo "Running make..." 
 make
 echo "Build completed successfully!"
+
+#end of file

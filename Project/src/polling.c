@@ -1,13 +1,26 @@
+/************************************************************
+* File name     : polling.c
+* Description   : The file contains the polling thread
+* Author        : Jeevan Suresh
+* License       : License       : Copyright (c) 2021 Trenser 
+                    All Rights Reserved
+**************************************************************/
 #include <stdio.h>
 #include <pthread.h>
 #include "../include/common.h"
+#include "../include/temperature_sensor.h"
+#include "../include/pressure_sensor.h"
 #include "../include/polling.h"
 
-extern CommonDatabase wstCommonDatabase;
+/******************************Function Declaration******************************/
+void* wvdPollingThread(void *arg);
 
-extern int wswReadTemp( void );
-extern int wswReadPrsure( void );
-
+/************************************************************
+* Function name     : wvdPollingThread
+* Description       : thread for polling the temperature and pressure value periodically
+* Arguments         : void *arg - thread id
+* Return type       : void
+**************************************************************/
 void* wvdPollingThread(void *arg)
 {
     int thread_id = *((int*)arg);
@@ -16,24 +29,22 @@ void* wvdPollingThread(void *arg)
     clock_t current_polltime        = 0;
     clock_t current_polltime_sec    = 0;
     int aiReadVal                   = 0;
-    int     iPollConfigCount        = 0;
+    int aiPollConfigCount           = 0;
     while(1)
     {
         current_polltime = clock();
         current_polltime_sec = (current_polltime) / CLOCKS_PER_SEC;
-        for( iPollConfigCount = 0; iPollConfigCount < PROCESS_CONFIG_SIZE; iPollConfigCount++)
+        for(aiPollConfigCount = 0; aiPollConfigCount < PROCESS_CONFIG_SIZE; aiPollConfigCount++)
         {
-            if( ( current_polltime_sec - wstPollingThreadConfig[iPollConfigCount].wiLastPollingTime )  >= wstPollingThreadConfig[iPollConfigCount].wiPollingTime )
+            if((current_polltime_sec - wstPollingThreadConfig[aiPollConfigCount].wiLastPollingTime)
+                >= wstPollingThreadConfig[aiPollConfigCount].wiPollingTime)
             {
-                aiReadVal = wstPollingThreadConfig[iPollConfigCount].iReadfn();
-                pthread_mutex_lock(&lock);
+                aiReadVal = wstPollingThreadConfig[aiPollConfigCount].iReadfn();
+                pthread_mutex_lock(&g_pthreadlock);
                 wstCommonDatabase.iReadVal = aiReadVal;
-                wstCommonDatabase.param_t = wstPollingThreadConfig[iPollConfigCount].param_t;
-                pthread_mutex_unlock(&lock);
-                #ifdef DEBUG_INFO
-                    printMessage(DEBUG, wstCommonDatabase.param_t, wstCommonDatabase.iReadVal);
-                #endif
-                wstPollingThreadConfig[iPollConfigCount].wiLastPollingTime = current_polltime_sec;
+                wstCommonDatabase.param_t = wstPollingThreadConfig[aiPollConfigCount].param_t;
+                pthread_mutex_unlock(&g_pthreadlock);
+                wstPollingThreadConfig[aiPollConfigCount].wiLastPollingTime = current_polltime_sec;
             }
         }
     }

@@ -1,3 +1,7 @@
+#************************************************************
+# Author 	: Jeevan Suresh
+# License   : 
+#**************************************************************
 # Compiler
 CC = gcc
 
@@ -16,9 +20,13 @@ all: $(TARGET)
 
 # Link object files into final executable
 $(TARGET): $(OBJS)
-	$(CC) $(CFLAGS) -o $(TARGET) $(OBJS)
+	@echo "Linking $(TARGET)..."
+	@$(CC) $(CFLAGS) -o $(TARGET) $(OBJS)
 
 # Compile source files into object files inside build/
 build/%.o: src/%.c | build
-	$(CC) $(CFLAGS) -c $< -o $@
+	@echo "Compiling $<..."
+	@$(CC) $(CFLAGS) -c $< -o $@
+
+#end of file
 
