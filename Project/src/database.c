@@ -14,8 +14,8 @@
 
 dataBase_t *database_node_t = NULL;
 
-int ucCheck_and_update_node(CommonDatabase *astCommonDatabase);
-int wstRetrive_data_node(PARAMETER_TYPE param_t, CommonDatabase *astCommonDatabase);
+ERROR_TYPE ucCheck_and_update_node(CommonDatabase *astCommonDatabase);
+ERROR_TYPE wstRetrive_data_node(PARAMETER_TYPE param_t, CommonDatabase *astCommonDatabase);
 /**********************************************************************
 * Function name     : create_node
 * Description       : to create new node to data table
@@ -44,7 +44,7 @@ dataBase_t* create_node(CommonDatabase *astCommonDatabase)
 * Arguments         : CommonDatabase *astCommonDatabase - hold the value of sensor
 * Return type       : uint8_t - return succes or error value
 *************************************************************************/
-int ucCheck_and_update_node(CommonDatabase *astCommonDatabase)
+ERROR_TYPE ucCheck_and_update_node(CommonDatabase *astCommonDatabase)
 {
     unsigned char ucDataNodeFound = DEF_CLEAR;
     if(astCommonDatabase == NULL)
@@ -107,11 +107,15 @@ int ucCheck_and_update_node(CommonDatabase *astCommonDatabase)
 * Arguments         : CommonDatabase *astCommonDatabase - hold the value of sensor
 * Return type       : uint8_t - return succes or error value
 *************************************************************************/
-int wstRetrive_data_node(PARAMETER_TYPE param_t, CommonDatabase *astCommonDatabase)
+ERROR_TYPE wstRetrive_data_node(PARAMETER_TYPE param_t, CommonDatabase *astCommonDatabase)
 {
     if(astCommonDatabase == NULL)
     {
         return ERRINVALID;
+    }
+    else
+    {
+        /* No Process*/
     }
     dataBase_t* temp_node = database_node_t;
     while(temp_node != NULL)
@@ -126,6 +130,10 @@ int wstRetrive_data_node(PARAMETER_TYPE param_t, CommonDatabase *astCommonDataba
         {
             temp_node = temp_node->next;
         }
+    }
+    if(temp_node == NULL)
+    {
+        return ERR_NOT_FOUND;
     }
 
     return NO_ERR;

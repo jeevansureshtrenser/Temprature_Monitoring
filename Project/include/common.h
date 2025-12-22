@@ -48,7 +48,8 @@ typedef enum
 {
     NO_ERR,
     ERRCREATN,
-    ERRINVALID
+    ERRINVALID,
+    ERR_NOT_FOUND
 }ERROR_TYPE;
 
 typedef enum

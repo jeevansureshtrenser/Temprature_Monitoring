@@ -38,7 +38,10 @@ void printMessage(WARNING_TYPE warningType_t, const char *pcInfo)
     double elapsed                  = DEF_CLEAR;
     clock_t current_time_sec        = DEF_CLEAR;
     clock_t current_milliseconds    = DEF_CLEAR;
-
+    if(pcInfo == NULL)
+    {
+        return;
+    }
     current_time = clock();
     elapsed = (double)(current_time - g_lStart_reference) / CLOCKS_PER_SEC;
     current_time_sec = (int)elapsed;
