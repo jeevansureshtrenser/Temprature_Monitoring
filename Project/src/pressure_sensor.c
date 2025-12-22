@@ -10,7 +10,7 @@
 #include "../include/common.h"
 
 /******************************Function Declaration******************************/
-int wswReadPrsure( void );
+int wswReadPrsure(int *);
 
 /************************************************************
 * Function name     : wswReadPrsure
@@ -18,11 +18,16 @@ int wswReadPrsure( void );
 * Arguments         : void
 * Return type       : int
 **************************************************************/
-int wswReadPrsure( void )
+int wswReadPrsure(int *aiReadval)
 {
     int max = UPPER_PRSURE_THRESHOLD + CALIB_CONST;
     int min = LOWER_PRSURE_THRESHOLD - CALIB_CONST;
-    return (rand() % (max - min + 1)) + min;
+    *aiReadval = (rand() % (max - min + 1)) + min;
+    if(aiReadval == DEF_CLEAR)
+    {
+        return ERRINVALID;
+    }
+    return NO_ERR;
 }
 
 /* end of file*/

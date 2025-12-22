@@ -11,7 +11,7 @@
 #include "../include/common.h"
 
 /*******************Function Declaration*********************/
-int wswReadTemp( void );
+int wswReadTemp(int *);
 
 /************************************************************
 * Function name     : wswReadTemp
@@ -19,11 +19,16 @@ int wswReadTemp( void );
 * Arguments         : void
 * Return type       : int
 **************************************************************/
-int wswReadTemp( void )
+int wswReadTemp(int *aiReadval)
 {
-    int max = UPPER_TEMP_THRESHOLD + CALIB_CONST;
-    int min = LOWER_TEMP_THRESHOLD - CALIB_CONST;
-    return (rand() % (max - min + 1)) + min;
+    int max = UPPER_PRSURE_THRESHOLD + CALIB_CONST;
+    int min = LOWER_PRSURE_THRESHOLD - CALIB_CONST;
+    *aiReadval = (rand() % (max - min + 1)) + min;
+    if(aiReadval == DEF_CLEAR)
+    {
+        return ERRINVALID;
+    }
+    return NO_ERR;
 }
 
 /* end of file*/

@@ -8,6 +8,6 @@
 #define __PRESSURE_SENSOR_H__
 
 /******************************Function Declaration******************************/
-extern int wswReadPrsure(void);
+extern int wswReadPrsure(int*);
 
 #endif /*__PRESSURE_SENSOR_H__*/

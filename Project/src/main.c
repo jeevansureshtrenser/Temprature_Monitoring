@@ -23,7 +23,8 @@
 int main( void )
 {
     // Declare handle for threads
-    pthread_t pollingthread, process_thread;
+    pthread_t pollingthread     = DEF_CLEAR;
+    pthread_t process_thread    = DEF_CLEAR;
 
     int iPollThreadID       = POLLING_THREAD_ID;
     int iProcessThreadID    = PROCESS_THREAD_ID;
@@ -33,14 +34,29 @@ int main( void )
     g_lStart_reference =  clock();
 
     // declare the time structure
-    time_t rawtime;
+    time_t rawtime = DEF_CLEAR;
     struct tm *timeinfo = NULL;
 
     // Get the current time (seconds since the Unix epoch)
-    time(&rawtime);
-
+    rawtime = time(NULL);
+    if(rawtime == DEF_CLEAR )
+    {
+        printMessage(INFO, "Time retrival failed");
+    }
+    else
+    {
+        /* No process*/
+    }
     // Convert to local time structure
     timeinfo = localtime(&rawtime);
+    if(timeinfo == NULL)
+    {
+        printMessage(INFO, "Time retrival failed");
+    }
+    else
+    {
+        /* No process*/
+    }
 
     // Format the date into a string using strftime
     // %Y = Year, %m = Month, %d = Day; format is YYYY-MM-DD
@@ -51,7 +67,7 @@ int main( void )
     {
         printMessage(INFO, "Polling Thread created successfully");
         // Create thread for processing
-        if (pthread_create(&process_thread, NULL, wvdProcessingThread, &iProcessThreadID) == 0)
+        if ((aiThreadReturn = pthread_create(&process_thread, NULL, wvdProcessingThread, &iProcessThreadID)) == 0)
         {
             printMessage(INFO, "Processing Thread created successfully");
             // Wait for both threads to finish 

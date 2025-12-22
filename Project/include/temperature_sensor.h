@@ -8,6 +8,6 @@
 #define __TEMPERATURE_SENSOR_H__
 
 /******************************Function Declaration******************************/
-extern int wswReadTemp( void );
+extern int wswReadTemp(int*);
 
 #endif /*__TEMPERATURE_SENSOR_H__*/

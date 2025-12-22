@@ -13,7 +13,7 @@
 typedef struct
 {
     PARAMETER_TYPE param_t;
-    int (*iReadfn)(void);
+    int (*iReadfn)(int *);
     long int wiPollingTime;
     long int wiLastPollingTime;
 

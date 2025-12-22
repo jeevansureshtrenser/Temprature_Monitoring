@@ -12,6 +12,7 @@
 #include <pthread.h>
 
 /******************************Macro Definitions******************************/
+
 #define UPPER_TEMP_THRESHOLD            70  // Upper threshold value for temp in degrees Celsius
 #define LOWER_TEMP_THRESHOLD            -10 // Lower threshold value for temp in degrees Celsius
 #define UPPER_PRSURE_THRESHOLD          100 // Upper threshold value for Pressure in PSI
@@ -45,6 +46,13 @@ typedef enum
 
 typedef enum
 {
+    NO_ERR,
+    ERRCREATN,
+    ERRINVALID
+}ERROR_TYPE;
+
+typedef enum
+{
     PARAM_TEMP,
     PARAM_PRESSURE,
     PARAM_CONFIG
@@ -62,7 +70,7 @@ extern char g_cDateBuffer[DATE_BUF_SIZE];
 
 extern pthread_mutex_t g_pthreadlock;
 
-extern CommonDatabase wstCommonDatabase;
+//extern CommonDatabase wstCommonDatabase;
 
 /******************************FUnction declaration******************************/
 void printMessage(WARNING_TYPE warningType_t, const char *pcInfo);

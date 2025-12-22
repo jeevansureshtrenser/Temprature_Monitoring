@@ -7,11 +7,29 @@
 **************************************************************/
 #include <stdio.h>
 #include <pthread.h>
+#include <unistd.h>
 #include "../include/common.h"
 #include "../include/temperature_sensor.h"
 #include "../include/pressure_sensor.h"
 #include "../include/polling.h"
+#include "../include/database.h"
 
+
+static PollingThreadConfig wstPollingThreadConfig[] = 
+{  
+    {
+        PARAM_TEMP,
+        wswReadTemp,
+        POLLING_TEMP_INTERVAL,
+        0
+    },
+    {
+        PARAM_PRESSURE,
+        wswReadPrsure,
+        POLLING_PRSSR_INTERVAL,
+        0
+    }
+};
 /******************************Function Declaration******************************/
 void* wvdPollingThread(void *arg);
 
@@ -24,27 +42,45 @@ void* wvdPollingThread(void *arg);
 void* wvdPollingThread(void *arg)
 {
     int thread_id = *((int*)arg);
-    PollingThreadConfig wstPollingThreadConfig[POLLING_CONFIG_SIZE]= {  { PARAM_TEMP,       wswReadTemp,    POLLING_TEMP_INTERVAL,  0},
-                                                                        { PARAM_PRESSURE,   wswReadPrsure,  POLLING_PRSSR_INTERVAL, 0} };
-    clock_t current_polltime        = 0;
-    clock_t current_polltime_sec    = 0;
-    int aiReadVal                   = 0;
-    int aiPollConfigCount           = 0;
+
+    clock_t current_polltime        = DEF_CLEAR;
+    clock_t current_polltime_sec    = DEF_CLEAR;
+    int aiReadVal                   = DEF_CLEAR;
+    int aiReadSts                   = DEF_CLEAR;
+    int aiPollConfigCount           = DEF_CLEAR;
+    CommonDatabase astCommonDatabase;
+    int aiPollConfgSize = sizeof(wstPollingThreadConfig) / sizeof(wstPollingThreadConfig[0]);
     while(1)
     {
         current_polltime = clock();
         current_polltime_sec = (current_polltime) / CLOCKS_PER_SEC;
-        for(aiPollConfigCount = 0; aiPollConfigCount < PROCESS_CONFIG_SIZE; aiPollConfigCount++)
+        for(aiPollConfigCount = 0; aiPollConfigCount < aiPollConfgSize; aiPollConfigCount++)
         {
             if((current_polltime_sec - wstPollingThreadConfig[aiPollConfigCount].wiLastPollingTime)
                 >= wstPollingThreadConfig[aiPollConfigCount].wiPollingTime)
             {
-                aiReadVal = wstPollingThreadConfig[aiPollConfigCount].iReadfn();
-                pthread_mutex_lock(&g_pthreadlock);
-                wstCommonDatabase.iReadVal = aiReadVal;
-                wstCommonDatabase.param_t = wstPollingThreadConfig[aiPollConfigCount].param_t;
-                pthread_mutex_unlock(&g_pthreadlock);
-                wstPollingThreadConfig[aiPollConfigCount].wiLastPollingTime = current_polltime_sec;
+                aiReadSts = wstPollingThreadConfig[aiPollConfigCount].iReadfn(&aiReadVal);
+                if(aiReadSts == SUCCESS)
+                {
+                    astCommonDatabase.iReadVal = aiReadVal;
+                    astCommonDatabase.param_t = wstPollingThreadConfig[aiPollConfigCount].param_t;
+                    pthread_mutex_lock(&g_pthreadlock);
+                    aiReadSts = ucCheck_and_update_node(&astCommonDatabase);
+                    pthread_mutex_unlock(&g_pthreadlock);
+                    if(aiReadSts == NO_ERR)
+                    {
+                        wstPollingThreadConfig[aiPollConfigCount].wiLastPollingTime = current_polltime_sec;
+                    }
+                }
+                else
+                {
+                    printMessage(INVALID, "Sensor read Error!");
+                }
+
+            }
+            else
+            {
+                /* No process*/
             }
         }
     }

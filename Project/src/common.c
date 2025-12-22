@@ -14,7 +14,7 @@
 
 /*********************Global Variable Declaration*************/
 
-CommonDatabase wstCommonDatabase;
+//CommonDatabase wstCommonDatabase;
 
 pthread_mutex_t g_pthreadlock = PTHREAD_MUTEX_INITIALIZER;
 
@@ -34,10 +34,10 @@ char g_cDateBuffer[DATE_BUF_SIZE];
 *************************************************************************/
 void printMessage(WARNING_TYPE warningType_t, const char *pcInfo)
 {
-    clock_t current_time;
-    double elapsed;
-    clock_t current_time_sec;
-    clock_t current_milliseconds;
+    clock_t current_time            = DEF_CLEAR;
+    double elapsed                  = DEF_CLEAR;
+    clock_t current_time_sec        = DEF_CLEAR;
+    clock_t current_milliseconds    = DEF_CLEAR;
 
     current_time = clock();
     elapsed = (double)(current_time - g_lStart_reference) / CLOCKS_PER_SEC;

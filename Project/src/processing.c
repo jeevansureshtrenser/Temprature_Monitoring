@@ -10,9 +10,34 @@
 #include <string.h>
 #include "../include/common.h"
 #include "../include/processing.h"
+#include "../include/database.h"
 
 /***********************Function Declaration******************/
+static ProcessThreadConfig wstProcessThreadConfig[] = 
+{
+    {   
+        PARAM_TEMP,
+        LOWER_TEMP_THRESHOLD,
+        UPPER_TEMP_THRESHOLD,
+        TEMP_LOWER_OPERATING_RANGE,
+        TEMP_UPPER_OPERATING_RANGE,
+        CHECKING_TEMP_INTERVAL,
+        0
+    },                                                  
+    {   
+        PARAM_PRESSURE,
+        LOWER_PRSURE_THRESHOLD,
+        UPPER_PRSURE_THRESHOLD,
+        PRESSURE_LOWER_OPERATING_RANGE,
+        PRESSURE_UPPER_OPERATING_RANGE,
+        CHECKING_PRSSR_INTERVAL,
+        0
+    }
+};
+/***********************Function Declaration******************/
 void* wvdProcessingThread(void *arg);
+
+
 /************************************************************
 * Function name     : wvdPollingThread
 * Description       : thread for polling the temperature and pressure value periodically
@@ -22,106 +47,54 @@ void* wvdProcessingThread(void *arg);
 void* wvdProcessingThread(void *arg)
 {
     int thread_id = *((int*)arg);
-    ProcessThreadConfig wstProcessThreadConfig[PROCESS_CONFIG_SIZE] = 
-    {
-        {   
-            PARAM_TEMP,
-            LOWER_TEMP_THRESHOLD,
-            UPPER_TEMP_THRESHOLD,
-            TEMP_LOWER_OPERATING_RANGE,
-            TEMP_UPPER_OPERATING_RANGE,
-            CHECKING_TEMP_INTERVAL,
-            0
-        },                                                  
-        {   
-            PARAM_PRESSURE,
-            LOWER_PRSURE_THRESHOLD,
-            UPPER_PRSURE_THRESHOLD,
-            PRESSURE_LOWER_OPERATING_RANGE,
-            PRESSURE_UPPER_OPERATING_RANGE,
-            CHECKING_PRSSR_INTERVAL,
-            0
-        }
-    };
 
-    clock_t lCurrent_processtime     = 0;
-    clock_t lCurrent_processtime_sec = 0;
-    int     aiReadVal                = 0;
-    int     aiPrcsConfigCount        = 0;
-    PARAMETER_TYPE param_get_type;
+    clock_t lCurrent_processtime     = DEF_CLEAR;
+    clock_t lCurrent_processtime_sec = DEF_CLEAR;
+    int     aiReadVal                = DEF_CLEAR;
+    int     aiPrcsConfigCount        = DEF_CLEAR;
+
+    int aiProcessConfgSize = sizeof(wstProcessThreadConfig) / sizeof(wstProcessThreadConfig[0]);
+    CommonDatabase astCommonDatabase;
     char cMessage[MSG_SIZE];
 
     while(1)
     {
-        pthread_mutex_lock(&g_pthreadlock);
-        aiReadVal = wstCommonDatabase.iReadVal;
-        param_get_type = wstCommonDatabase.param_t;
-        pthread_mutex_unlock(&g_pthreadlock);
-
         lCurrent_processtime = clock();
         lCurrent_processtime_sec = (lCurrent_processtime) / CLOCKS_PER_SEC;
         
-        for(aiPrcsConfigCount = 0; aiPrcsConfigCount < PROCESS_CONFIG_SIZE; aiPrcsConfigCount++)
+        for(aiPrcsConfigCount = 0; aiPrcsConfigCount < aiProcessConfgSize; aiPrcsConfigCount++)
         {
-            if(wstProcessThreadConfig[aiPrcsConfigCount].param_t == param_get_type)
+
+            if((lCurrent_processtime_sec - wstProcessThreadConfig[aiPrcsConfigCount].wiLastCheckTime)  
+                >= wstProcessThreadConfig[aiPrcsConfigCount].wiCheckingTime)
             {
-                if((lCurrent_processtime_sec - wstProcessThreadConfig[aiPrcsConfigCount].wiLastCheckTime)  
-                    >= wstProcessThreadConfig[aiPrcsConfigCount].wiCheckingTime)
+                pthread_mutex_lock(&g_pthreadlock);
+                aiReadVal = wstRetrive_data_node(wstProcessThreadConfig[aiPrcsConfigCount].param_t, &astCommonDatabase);
+                pthread_mutex_unlock(&g_pthreadlock);
+                if(aiReadVal == SUCCESS)
                 {
-                    if(aiReadVal < wstProcessThreadConfig[aiPrcsConfigCount].wiLwrOprtngRange
-                        || aiReadVal > wstProcessThreadConfig[aiPrcsConfigCount].wiUprOprtngRange)
+                    memset(cMessage, DEF_CLEAR, sizeof(cMessage));
+                    switch(astCommonDatabase.param_t)
                     {
-                        memset(cMessage, DEF_CLEAR, sizeof(cMessage));
-                        switch(param_get_type)
-                        {
-                            case PARAM_TEMP     : snprintf(cMessage, sizeof(cMessage), " %3d Temperature Sensor Overbound Detected! System Failure!", aiReadVal);
-                                break;
-                            case PARAM_PRESSURE : snprintf(cMessage, sizeof(cMessage), "%3d Pressure Sensor Overbound detected! System Failure!", aiReadVal);
-                                break;
-                            default             : /* No process*/
-                                break;
-                        }
-                        printMessage(WARNING, (const char*)cMessage);
+                        case PARAM_TEMP     : snprintf(cMessage,sizeof(cMessage), "TEMPERATURE | %3d Degrees Celsius", astCommonDatabase.iReadVal);
+                            break;
+                        case PARAM_PRESSURE : snprintf(cMessage,sizeof(cMessage), "PRESSURE    | %3d PSI            ", astCommonDatabase.iReadVal);
+                            break;
+                        default             : /* No process */
+                            break;
                     }
-                    else
-                    {
-                        if(aiReadVal < wstProcessThreadConfig[aiPrcsConfigCount].wiLowerThreshold
-                        || aiReadVal > wstProcessThreadConfig[aiPrcsConfigCount].wiUpperThreshold)
-                        {
-                            memset(cMessage, DEF_CLEAR, sizeof(cMessage));
-                            switch(param_get_type)
-                            {
-                                case PARAM_TEMP     : snprintf(cMessage, sizeof(cMessage), "TEMPERATURE | %3d Degree Celsius  | Out of Range ", aiReadVal);
-                                    break;
-                                case PARAM_PRESSURE : snprintf(cMessage, sizeof(cMessage), "PRESSURE    | %3d PSI             | Out of Range ", aiReadVal);
-                                    break;
-                                default             : /* No process*/
-                                    break;
-                            }
-                            printMessage(WARNING, (const char*)cMessage);
-
-                        }
-                        else
-                        {
-                            #ifdef DEBUG_INFO
-                                memset(cMessage, DEF_CLEAR, sizeof(cMessage));
-                                switch(wstCommonDatabase.param_t)
-                                {
-                                    case PARAM_TEMP     : snprintf(cMessage,sizeof(cMessage), "TEMPERATURE | %3d Degrees Celsius", aiReadVal);
-                                        break;
-                                    case PARAM_PRESSURE : snprintf(cMessage,sizeof(cMessage), "PRESSURE    | %3d PSI            ", aiReadVal);
-                                        break;
-                                    default             : /* No process */
-                                        break;
-                                }
-                                printMessage(DEBUG,(const char*)cMessage);
-                            #endif
-                        }
-                        wstProcessThreadConfig[aiPrcsConfigCount].wiLastCheckTime = lCurrent_processtime_sec;
-
-                    }
-                    
+                    printMessage(DEBUG, cMessage);
+                    wstProcessThreadConfig[aiPrcsConfigCount].wiLastCheckTime = lCurrent_processtime_sec;
+                
                 }
+                else
+                {
+                    /* No Process*/
+                }
+            }
+            else
+            {
+                 /* No Process*/
             }
 
         }
