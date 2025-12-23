@@ -41,6 +41,7 @@ typedef enum
     WARNING,
     DEBUG,
     INFO,
+    ERROR,
     INVALID
 }WARNING_TYPE;
 
@@ -66,6 +67,7 @@ typedef struct
 }CommonDatabase;
 
 extern clock_t g_lStart_reference;
+extern unsigned char g_ubDebugMode;
 
 extern char g_cDateBuffer[DATE_BUF_SIZE];
 
@@ -75,5 +77,7 @@ extern pthread_mutex_t g_pthreadlock;
 
 /******************************FUnction declaration******************************/
 void printMessage(WARNING_TYPE warningType_t, const char *pcInfo);
-
+void InitDateBuffer(void);
+void printErrInfo(int aiErrValue);
+ERROR_TYPE ExtractArgumentlist(int argc, char *argv[]);
 #endif /* COMMON_H_ */

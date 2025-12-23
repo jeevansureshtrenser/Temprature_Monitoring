@@ -48,14 +48,15 @@ void* wvdPollingThread(void *arg)
     int aiReadVal                   = DEF_CLEAR;
     int aiReadSts                   = DEF_CLEAR;
     int aiPollConfigCount           = DEF_CLEAR;
+    int aiPollConfgSize             = DEF_CLEAR;
     CommonDatabase astCommonDatabase;
-    int aiPollConfgSize = sizeof(wstPollingThreadConfig) / sizeof(wstPollingThreadConfig[0]);
+    aiPollConfgSize = sizeof(wstPollingThreadConfig) / sizeof(wstPollingThreadConfig[0]);
     while(1)
     {
-        current_polltime = clock();
-        current_polltime_sec = (current_polltime) / CLOCKS_PER_SEC;
         for(aiPollConfigCount = 0; aiPollConfigCount < aiPollConfgSize; aiPollConfigCount++)
         {
+            current_polltime = clock();
+            current_polltime_sec = (current_polltime) / CLOCKS_PER_SEC;
             if((current_polltime_sec - wstPollingThreadConfig[aiPollConfigCount].wiLastPollingTime)
                 >= wstPollingThreadConfig[aiPollConfigCount].wiPollingTime)
             {

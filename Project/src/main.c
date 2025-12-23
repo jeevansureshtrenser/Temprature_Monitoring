@@ -20,7 +20,7 @@
 * argument      : void
 * Return        : int
 **************************************************************/
-int main( void )
+int main(int argc, char *argv[])
 {
     // Declare handle for threads
     pthread_t pollingthread     = DEF_CLEAR;
@@ -30,44 +30,21 @@ int main( void )
     int iProcessThreadID    = PROCESS_THREAD_ID;
     int aiThreadReturn      = DEF_CLEAR;
 
-    //Get the thread start time
-    g_lStart_reference =  clock();
+    // Create date buffer, store current date
+    InitDateBuffer();
 
-    // declare the time structure
-    time_t rawtime = DEF_CLEAR;
-    struct tm *timeinfo = NULL;
-
-    // Get the current time (seconds since the Unix epoch)
-    rawtime = time(NULL);
-    if(rawtime == DEF_CLEAR )
+    if(ExtractArgumentlist(argc, argv) != NO_ERR)
     {
-        printMessage(INFO, "Time retrival failed");
+        printMessage(INFO, "System Shut down!");
+        return 0;
     }
-    else
-    {
-        /* No process*/
-    }
-    // Convert to local time structure
-    timeinfo = localtime(&rawtime);
-    if(timeinfo == NULL)
-    {
-        printMessage(INFO, "Time retrival failed");
-    }
-    else
-    {
-        /* No process*/
-    }
-
-    // Format the date into a string using strftime
-    // %Y = Year, %m = Month, %d = Day; format is YYYY-MM-DD
-    strftime(g_cDateBuffer, sizeof(g_cDateBuffer), "%Y-%m-%d", timeinfo);
 
     // Create thread for Polling
-    if ((aiThreadReturn = pthread_create(&pollingthread, NULL, wvdPollingThread, &iPollThreadID)) == 0) 
+    if ((aiThreadReturn = pthread_create(&pollingthread, NULL, wvdPollingThread, &iPollThreadID)) == SUCCESS) 
     {
         printMessage(INFO, "Polling Thread created successfully");
         // Create thread for processing
-        if ((aiThreadReturn = pthread_create(&process_thread, NULL, wvdProcessingThread, &iProcessThreadID)) == 0)
+        if ((aiThreadReturn = pthread_create(&process_thread, NULL, wvdProcessingThread, &iProcessThreadID)) == SUCCESS)
         {
             printMessage(INFO, "Processing Thread created successfully");
             // Wait for both threads to finish 
@@ -76,33 +53,15 @@ int main( void )
         }
         else
         {
-            switch(aiThreadReturn)
-            {
-                case EAGAIN: printMessage(INVALID, "EAGAIN : Processing Thread creation failed");
-                    break;
-                case EINVAL: printMessage(INVALID, "EINVAL : Processing Thread creation failed");
-                    break;
-                case EPERM: printMessage(INVALID, "EPERM : Processing Thread creation failed");
-                    break;
-                default : printMessage(INVALID, "UNKNOWN : Processing Thread creation failed");
-            }
-            
+            printMessage(INVALID, "Processing Thread creation failed");
+            printErrInfo(aiThreadReturn);
         }
        
     }
     else
     {
-        switch(aiThreadReturn)
-        {
-            case EAGAIN: printMessage(INVALID, "EAGAIN : Polling Thread creation failed");
-                break;
-            case EINVAL: printMessage(INVALID, "EINVAL : Polling Thread creation failed");
-                break;
-            case EPERM: printMessage(INVALID, "EPERM : Polling Thread creation failed");
-                break;
-            default : printMessage(INVALID, "UNKNOWN : Polling Thread creation failed");
-                break;
-        }
+            printMessage(INVALID, "Polling Thread creation failed");
+            printErrInfo(aiThreadReturn);
     }
 
     printMessage(INFO, "Thread creation failed! System Shut down!");
