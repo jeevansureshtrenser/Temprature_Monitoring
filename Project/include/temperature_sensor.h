@@ -6,8 +6,9 @@
 **************************************************************/
 #ifndef __TEMPERATURE_SENSOR_H__
 #define __TEMPERATURE_SENSOR_H__
-
+/******************************Include Files************************************/
+#include "../include/common.h"
 /******************************Function Declaration******************************/
-extern int wswReadTemp(int*);
+extern ERROR_TYPE wswReadTemp(int*);
 
 #endif /*__TEMPERATURE_SENSOR_H__*/

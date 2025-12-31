@@ -5,13 +5,14 @@
 * License       : Copyright (c) 2021 Trenser 
                     All Rights Reserved
 **************************************************************/
+/*******************************Include Files************************/ 
 #include <stdio.h>
 #include <stdlib.h>
 #include "../include/temperature_sensor.h"
 #include "../include/common.h"
 
 /*******************Function Declaration*********************/
-int wswReadTemp(int *);
+ERROR_TYPE wswReadTemp(int *);
 
 /************************************************************
 * Function name     : wswReadTemp
@@ -19,10 +20,10 @@ int wswReadTemp(int *);
 * Arguments         : void
 * Return type       : int
 **************************************************************/
-int wswReadTemp(int *aiReadval)
+ERROR_TYPE wswReadTemp(int *aiReadval)
 {
-    int max = UPPER_PRSURE_THRESHOLD + CALIB_CONST;
-    int min = LOWER_PRSURE_THRESHOLD - CALIB_CONST;
+    int max = UPPER_TEMP_THRESHOLD + CALIB_CONST;
+    int min = LOWER_TEMP_THRESHOLD - CALIB_CONST;
     *aiReadval = (rand() % (max - min + 1)) + min;
     if(aiReadval == DEF_CLEAR)
     {

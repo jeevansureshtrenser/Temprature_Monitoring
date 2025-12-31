@@ -41,9 +41,14 @@ void printMessage(WARNING_TYPE warningType_t, const char *pcInfo)
         return;
     }
     current_time = clock();
+    if(current_time == DEF_CLEAR)
+    {
+        printf("| %s |  ERROR getting time info | ERROR   | %s |\n", g_cDateBuffer, pcInfo);
+        return;
+    }
     elapsed = (double)(current_time - g_lStart_reference) / CLOCKS_PER_SEC;
     current_time_sec = (int)elapsed;
-    current_milliseconds = (int)((elapsed - current_time_sec) * 1000);
+    current_milliseconds = (int)((elapsed - current_time_sec) * ONE_MILLS_IN_SEC);
 
     switch(warningType_t)
     {
@@ -87,7 +92,9 @@ void InitDateBuffer(void)
     rawtime = time(NULL);
     if(rawtime == DEF_CLEAR )
     {
-        printMessage(INFO, "Time retrival failed");
+        printMessage(ERROR, "Current time retrival failed");
+        snprintf(g_cDateBuffer, sizeof(g_cDateBuffer), "0000-00-00");
+        return;
     }
     else
     {
@@ -97,7 +104,9 @@ void InitDateBuffer(void)
     timeinfo = localtime(&rawtime);
     if(timeinfo == NULL)
     {
-        printMessage(INFO, "Time retrival failed");
+        printMessage(ERROR, "Local Time retrival failed");
+        snprintf(g_cDateBuffer, sizeof(g_cDateBuffer), "0000-00-00");
+        return;
     }
     else
     {
@@ -107,6 +116,16 @@ void InitDateBuffer(void)
     // Format the date into a string using strftime
     // %Y = Year, %m = Month, %d = Day; format is YYYY-MM-DD
     strftime(g_cDateBuffer, sizeof(g_cDateBuffer), "%Y-%m-%d", timeinfo);
+    if(strlen(g_cDateBuffer) == 0)
+    {
+        printMessage(ERROR, "Format the date into a string failed");
+        snprintf(g_cDateBuffer, sizeof(g_cDateBuffer), "0000-00-00");
+        return;
+    }
+    else
+    {
+        /* No process*/
+    }
 }
 /**********************************************************************
 * Function name     : printErrInfo
@@ -128,39 +147,48 @@ void printErrInfo(int aiErrValue)
             break;
     }
 }
-
+/**********************************************************************
+* Function name     : ExtractArgumentlist
+* Description       : to extract command line arguments
+* Arguments         : int argc - argument count
+*                   : char *argv[] - argument values
+* Return type       : ERROR_TYPE - error type
+*************************************************************************/
 ERROR_TYPE ExtractArgumentlist(int argc, char *argv[])
 {
     ERROR_TYPE err_t = NO_ERR;
-    if (argv == NULL)
-    { 
-        printMessage(ERROR,"Error: argv is NULL\n");
-        return ERRINVALID; 
-    }
-    else
-    {
-        /* No Process*/
-    }
     for (int index = 1; index < argc; index++)
-    { 
-        if(strstr(argv[index],"--DEBUG") != NULL)
+    {
+        if(argv[index] == NULL)
         {
-            g_ubDebugMode = 1;
-            break;
-        }
-        else if(strstr(argv[index],"-d") != NULL)
-        {
-            g_ubDebugMode = 1;
-            break;
+            err_t = ERRINVALID; 
+            printMessage(ERROR, "Error: argv element is NULL");
+            return err_t;
         }
         else
         {
-            err_t = ERRINVALID; 
-            printMessage(ERROR, "Error: invalid Argument");
-            printMessage(INFO, "Type ./build/temperature_pressure_monitor");
-            printMessage(INFO, "Type for debug ./build/temperature_pressure_monitor --DEBUG or -d");
-            
-        }
+            if(strstr(argv[index],"--DEBUG") != NULL || strstr(argv[index],"-d") != NULL)
+            {
+                g_ubDebugMode = DEF_SET;
+                printMessage(INFO, "Debug mode enabled");
+                break;
+            }
+            else if(strstr(argv[index],"--debug") != NULL)
+            {
+                g_ubDebugMode = DEF_SET;
+                printMessage(INFO, "Debug mode enabled");
+                break;
+            }
+            else
+            {
+                err_t = ERRINVALID; 
+                printMessage(ERROR, "Error: invalid Argument");
+                printMessage(INFO, "Type ./build/temperature_pressure_monitor");
+                printMessage(INFO, "Type for debug ./build/temperature_pressure_monitor --DEBUG or -d");
+                break;
+            }
+            /* No Process*/
+        }    
     
     }
     return err_t;

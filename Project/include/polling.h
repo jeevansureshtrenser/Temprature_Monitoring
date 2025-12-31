@@ -6,14 +6,15 @@
 **************************************************************/
 #ifndef __POLLING_H__
 #define __POLLING_H_
-
+#include "../include/common.h"
+/******************************Macro Definitions************************************/
 #define POLLING_THREAD_ID   1
 
 /******************************Local Variable Declaration******************************/
 typedef struct
 {
     PARAMETER_TYPE param_t;
-    int (*iReadfn)(int *);
+    ERROR_TYPE (*iReadfn)(int *);
     long int wiPollingTime;
     long int wiLastPollingTime;
 

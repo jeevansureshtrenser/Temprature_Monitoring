@@ -5,16 +5,19 @@
 * License       : License       : Copyright (c) 2021 Trenser 
                     All Rights Reserved
 **************************************************************/
+/*******************************Include Files************************/  
 #include <stdio.h>
 #include <pthread.h>
 #include <unistd.h>
+#include <string.h>
+#include <time.h>
 #include "../include/common.h"
 #include "../include/temperature_sensor.h"
 #include "../include/pressure_sensor.h"
 #include "../include/polling.h"
 #include "../include/database.h"
 
-
+/***********************Global Variable Declaration******************/  
 static PollingThreadConfig wstPollingThreadConfig[] = 
 {  
     {
@@ -41,8 +44,7 @@ void* wvdPollingThread(void *arg);
 **************************************************************/
 void* wvdPollingThread(void *arg)
 {
-    int thread_id = *((int*)arg);
-
+    int thread_id                   = DEF_CLEAR;
     clock_t current_polltime        = DEF_CLEAR;
     clock_t current_polltime_sec    = DEF_CLEAR;
     int aiReadVal                   = DEF_CLEAR;
@@ -50,7 +52,27 @@ void* wvdPollingThread(void *arg)
     int aiPollConfigCount           = DEF_CLEAR;
     int aiPollConfgSize             = DEF_CLEAR;
     CommonDatabase astCommonDatabase;
+    if(arg == NULL)
+    {
+        printMessage(ERROR, "Polling thread arg is NULL");
+        return NULL;
+    }
+    else
+    {
+        thread_id = *((int*)arg);
+    }
+    
     aiPollConfgSize = sizeof(wstPollingThreadConfig) / sizeof(wstPollingThreadConfig[0]);
+    if(aiPollConfgSize == DEF_CLEAR)
+    {
+        printMessage(ERROR, "Polling thread config size is zero");
+        return NULL;
+    }
+    else
+    {
+        /* No process*/
+    }
+
     while(1)
     {
         for(aiPollConfigCount = 0; aiPollConfigCount < aiPollConfgSize; aiPollConfigCount++)
@@ -61,16 +83,19 @@ void* wvdPollingThread(void *arg)
                 >= wstPollingThreadConfig[aiPollConfigCount].wiPollingTime)
             {
                 aiReadSts = wstPollingThreadConfig[aiPollConfigCount].iReadfn(&aiReadVal);
-                if(aiReadSts == SUCCESS)
+                if(aiReadSts == NO_ERR)
                 {
+                    (void)memset(&astCommonDatabase, DEF_CLEAR, sizeof(CommonDatabase));
                     astCommonDatabase.iReadVal = aiReadVal;
                     astCommonDatabase.param_t = wstPollingThreadConfig[aiPollConfigCount].param_t;
-                    pthread_mutex_lock(&g_pthreadlock);
                     aiReadSts = ucCheck_and_update_node(&astCommonDatabase);
-                    pthread_mutex_unlock(&g_pthreadlock);
                     if(aiReadSts == NO_ERR)
                     {
                         wstPollingThreadConfig[aiPollConfigCount].wiLastPollingTime = current_polltime_sec;
+                    }
+                    else
+                    {
+                        printMessage(ERROR, "Error updating database!");
                     }
                 }
                 else

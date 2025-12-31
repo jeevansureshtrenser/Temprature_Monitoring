@@ -33,7 +33,10 @@
 
 #define SUCCESS                         0   // For success return
 #define DEF_CLEAR                       0
+#define DEF_SET                         1
 #define MSG_SIZE                        64
+
+#define ONE_MILLS_IN_SEC                1000
 
 /******************************Global Variable declaration******************************/
 typedef enum

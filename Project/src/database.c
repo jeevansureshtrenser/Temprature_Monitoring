@@ -46,6 +46,7 @@ dataBase_t* create_node(CommonDatabase *astCommonDatabase)
 *************************************************************************/
 ERROR_TYPE ucCheck_and_update_node(CommonDatabase *astCommonDatabase)
 {
+    ERROR_TYPE errVal = NO_ERR;
     unsigned char ucDataNodeFound = DEF_CLEAR;
     if(astCommonDatabase == NULL)
     {
@@ -55,13 +56,13 @@ ERROR_TYPE ucCheck_and_update_node(CommonDatabase *astCommonDatabase)
     {
         /* No process*/
     }
-
+    pthread_mutex_lock(&g_pthreadlock);
     if(database_node_t == NULL)
     {
         database_node_t = create_node(astCommonDatabase);
         if(database_node_t == NULL)
         {
-            return ERRCREATN;
+            errVal = ERRCREATN;
         }
         else
         {
@@ -89,7 +90,7 @@ ERROR_TYPE ucCheck_and_update_node(CommonDatabase *astCommonDatabase)
             dataBase_t* new_node = create_node(astCommonDatabase);
             if(new_node == NULL)
             {
-                return ERRCREATN;
+                errVal = ERRCREATN;
             }
             prev_node->next = new_node;
         }
@@ -98,7 +99,8 @@ ERROR_TYPE ucCheck_and_update_node(CommonDatabase *astCommonDatabase)
             /* No process*/
         }
     }
-    return NO_ERR;
+    pthread_mutex_unlock(&g_pthreadlock);
+    return errVal;
 }
 
 /**********************************************************************
@@ -118,6 +120,7 @@ ERROR_TYPE wstRetrive_data_node(PARAMETER_TYPE param_t, CommonDatabase *astCommo
         /* No Process*/
     }
     dataBase_t* temp_node = database_node_t;
+    pthread_mutex_lock(&g_pthreadlock);
     while(temp_node != NULL)
     {
         if(temp_node->wstCommonDatabase.param_t == param_t)
@@ -131,6 +134,7 @@ ERROR_TYPE wstRetrive_data_node(PARAMETER_TYPE param_t, CommonDatabase *astCommo
             temp_node = temp_node->next;
         }
     }
+    pthread_mutex_unlock(&g_pthreadlock);
     if(temp_node == NULL)
     {
         return ERR_NOT_FOUND;

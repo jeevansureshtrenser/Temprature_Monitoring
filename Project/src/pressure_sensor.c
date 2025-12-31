@@ -4,13 +4,13 @@
 * Author        : Jeevan Suresh
 * License       : 
 **************************************************************/
+/******************************Include Files************************************/
 #include <stdio.h>
 #include <stdlib.h>
 #include "../include/pressure_sensor.h"
-#include "../include/common.h"
 
 /******************************Function Declaration******************************/
-int wswReadPrsure(int *);
+ERROR_TYPE wswReadPrsure(int *);
 
 /************************************************************
 * Function name     : wswReadPrsure
@@ -18,7 +18,7 @@ int wswReadPrsure(int *);
 * Arguments         : void
 * Return type       : int
 **************************************************************/
-int wswReadPrsure(int *aiReadval)
+ERROR_TYPE wswReadPrsure(int *aiReadval)
 {
     int max = UPPER_PRSURE_THRESHOLD + CALIB_CONST;
     int min = LOWER_PRSURE_THRESHOLD - CALIB_CONST;
@@ -26,6 +26,10 @@ int wswReadPrsure(int *aiReadval)
     if(aiReadval == DEF_CLEAR)
     {
         return ERRINVALID;
+    }
+    else
+    {
+        /* No Process*/
     }
     return NO_ERR;
 }

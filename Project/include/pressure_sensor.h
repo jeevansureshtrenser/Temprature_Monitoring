@@ -6,8 +6,9 @@
 **************************************************************/
 #ifndef __PRESSURE_SENSOR_H__
 #define __PRESSURE_SENSOR_H__
-
+/******************************Include Files************************************/
+#include "../include/common.h"
 /******************************Function Declaration******************************/
-extern int wswReadPrsure(int*);
+extern ERROR_TYPE wswReadPrsure(int*);
 
 #endif /*__PRESSURE_SENSOR_H__*/
