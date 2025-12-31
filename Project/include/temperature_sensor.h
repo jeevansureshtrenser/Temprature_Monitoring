@@ -9,6 +9,6 @@
 /******************************Include Files************************************/
 #include "../include/common.h"
 /******************************Function Declaration******************************/
-extern ERROR_TYPE wswReadTemp(int*);
+extern ERROR_TYPE ReadTemp(int*);
 
 #endif /*__TEMPERATURE_SENSOR_H__*/

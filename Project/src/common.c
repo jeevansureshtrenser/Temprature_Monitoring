@@ -21,7 +21,7 @@ unsigned char g_ubDebugMode     = DEF_CLEAR;
 char g_cDateBuffer[DATE_BUF_SIZE];
 
 /**********************************************************************
-* Function name     : printMessage
+* Function name     : PrintMessage
 * Description       : to print the message based on the parameter type
 * Arguments         : WarningType warningType_t - to detect type of 
 *                        warning, debug or invalid
@@ -30,7 +30,7 @@ char g_cDateBuffer[DATE_BUF_SIZE];
 *                      int iReadVal - read data
 * Return type       : void
 *************************************************************************/
-void printMessage(WARNING_TYPE warningType_t, const char *pcInfo)
+void PrintMessage(WARNING_TYPE warningType_t, const char *pcInfo)
 {
     clock_t current_time            = DEF_CLEAR;
     double elapsed                  = DEF_CLEAR;
@@ -92,8 +92,8 @@ void InitDateBuffer(void)
     rawtime = time(NULL);
     if(rawtime == DEF_CLEAR )
     {
-        printMessage(ERROR, "Current time retrival failed");
-        snprintf(g_cDateBuffer, sizeof(g_cDateBuffer), "0000-00-00");
+        PrintMessage(ERROR, "Current time retrival failed");
+        (void)snprintf(g_cDateBuffer, sizeof(g_cDateBuffer), "0000-00-00");
         return;
     }
     else
@@ -104,8 +104,8 @@ void InitDateBuffer(void)
     timeinfo = localtime(&rawtime);
     if(timeinfo == NULL)
     {
-        printMessage(ERROR, "Local Time retrival failed");
-        snprintf(g_cDateBuffer, sizeof(g_cDateBuffer), "0000-00-00");
+        PrintMessage(ERROR, "Local Time retrival failed");
+        (void)snprintf(g_cDateBuffer, sizeof(g_cDateBuffer), "0000-00-00");
         return;
     }
     else
@@ -118,8 +118,8 @@ void InitDateBuffer(void)
     strftime(g_cDateBuffer, sizeof(g_cDateBuffer), "%Y-%m-%d", timeinfo);
     if(strlen(g_cDateBuffer) == 0)
     {
-        printMessage(ERROR, "Format the date into a string failed");
-        snprintf(g_cDateBuffer, sizeof(g_cDateBuffer), "0000-00-00");
+        PrintMessage(ERROR, "Format the date into a string failed");
+        (void)snprintf(g_cDateBuffer, sizeof(g_cDateBuffer), "0000-00-00");
         return;
     }
     else
@@ -128,22 +128,22 @@ void InitDateBuffer(void)
     }
 }
 /**********************************************************************
-* Function name     : printErrInfo
+* Function name     : PrintErrInfo
 * Description       : to print error information
 * Arguments         : int aiErrValue - error value
 * Return type       : void
 *************************************************************************/
-void printErrInfo(int aiErrValue)
+void PrintErrInfo(int aiErrValue)
 {
      switch(aiErrValue)
     {
-        case EAGAIN: printMessage(INVALID, "Error: EAGAIN - resource temporarily unavailable!");
+        case EAGAIN: PrintMessage(INVALID, "Error: EAGAIN - resource temporarily unavailable!");
             break;
-        case EINVAL: printMessage(INVALID, "Error: EINVAL - Invalid argument!");
+        case EINVAL: PrintMessage(INVALID, "Error: EINVAL - Invalid argument!");
             break;
-        case EPERM: printMessage(INVALID, "Error: EPERM - Operation Not Permitted!");
+        case EPERM: PrintMessage(INVALID, "Error: EPERM - Operation Not Permitted!");
             break;
-        default : printMessage(INVALID, "Error: UNKNOWN - Error unknown");
+        default : PrintMessage(INVALID, "Error: UNKNOWN - Error unknown");
             break;
     }
 }
@@ -162,7 +162,7 @@ ERROR_TYPE ExtractArgumentlist(int argc, char *argv[])
         if(argv[index] == NULL)
         {
             err_t = ERRINVALID; 
-            printMessage(ERROR, "Error: argv element is NULL");
+            PrintMessage(ERROR, "Error: argv element is NULL");
             return err_t;
         }
         else
@@ -170,21 +170,21 @@ ERROR_TYPE ExtractArgumentlist(int argc, char *argv[])
             if(strstr(argv[index],"--DEBUG") != NULL || strstr(argv[index],"-d") != NULL)
             {
                 g_ubDebugMode = DEF_SET;
-                printMessage(INFO, "Debug mode enabled");
+                PrintMessage(INFO, "Debug mode enabled");
                 break;
             }
             else if(strstr(argv[index],"--debug") != NULL)
             {
                 g_ubDebugMode = DEF_SET;
-                printMessage(INFO, "Debug mode enabled");
+                PrintMessage(INFO, "Debug mode enabled");
                 break;
             }
             else
             {
                 err_t = ERRINVALID; 
-                printMessage(ERROR, "Error: invalid Argument");
-                printMessage(INFO, "Type ./build/temperature_pressure_monitor");
-                printMessage(INFO, "Type for debug ./build/temperature_pressure_monitor --DEBUG or -d");
+                PrintMessage(ERROR, "Error: invalid Argument");
+                PrintMessage(INFO, "Type ./build/temperature_pressure_monitor");
+                PrintMessage(INFO, "Type for debug ./build/temperature_pressure_monitor --DEBUG or -d");
                 break;
             }
             /* No Process*/

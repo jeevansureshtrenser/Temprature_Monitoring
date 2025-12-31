@@ -79,8 +79,8 @@ extern pthread_mutex_t g_pthreadlock;
 //extern CommonDatabase wstCommonDatabase;
 
 /******************************FUnction declaration******************************/
-void printMessage(WARNING_TYPE warningType_t, const char *pcInfo);
+void PrintMessage(WARNING_TYPE warningType_t, const char *pcInfo);
 void InitDateBuffer(void);
-void printErrInfo(int aiErrValue);
+void PrintErrInfo(int aiErrValue);
 ERROR_TYPE ExtractArgumentlist(int argc, char *argv[]);
 #endif /* COMMON_H_ */

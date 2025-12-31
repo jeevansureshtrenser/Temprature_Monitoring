@@ -10,7 +10,7 @@
 #include "../include/pressure_sensor.h"
 
 /******************************Function Declaration******************************/
-ERROR_TYPE wswReadPrsure(int *);
+ERROR_TYPE ReadPressure(int *);
 
 /************************************************************
 * Function name     : wswReadPrsure
@@ -18,7 +18,7 @@ ERROR_TYPE wswReadPrsure(int *);
 * Arguments         : void
 * Return type       : int
 **************************************************************/
-ERROR_TYPE wswReadPrsure(int *aiReadval)
+ERROR_TYPE ReadPressure(int *aiReadval)
 {
     int max = UPPER_PRSURE_THRESHOLD + CALIB_CONST;
     int min = LOWER_PRSURE_THRESHOLD - CALIB_CONST;

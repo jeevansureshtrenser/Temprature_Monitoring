@@ -12,15 +12,15 @@
 #include "../include/common.h"
 
 /*******************Function Declaration*********************/
-ERROR_TYPE wswReadTemp(int *);
+ERROR_TYPE ReadTemp(int *);
 
 /************************************************************
-* Function name     : wswReadTemp
+* Function name     : ReadTemp
 * Description       : to return random value for temperature value
 * Arguments         : void
 * Return type       : int
 **************************************************************/
-ERROR_TYPE wswReadTemp(int *aiReadval)
+ERROR_TYPE ReadTemp(int *aiReadval)
 {
     int max = UPPER_TEMP_THRESHOLD + CALIB_CONST;
     int min = LOWER_TEMP_THRESHOLD - CALIB_CONST;

@@ -16,7 +16,7 @@ typedef struct dataBase {
 
 extern dataBase_t *database_node_t;
 /******************************Function Declaration******************************/
-extern ERROR_TYPE ucCheck_and_update_node(CommonDatabase *astCommonDatabase);
-extern ERROR_TYPE wstRetrive_data_node(PARAMETER_TYPE param_t, CommonDatabase *astCommonDatabase);
+extern ERROR_TYPE CheckAndUpdateDataNode(CommonDatabase *astCommonDatabase);
+extern ERROR_TYPE RetriveDataNode(PARAMETER_TYPE param_t, CommonDatabase *astCommonDatabase);
 
 #endif /*__DATABASE_H__*/

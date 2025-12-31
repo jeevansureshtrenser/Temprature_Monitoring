@@ -9,6 +9,6 @@
 /******************************Include Files************************************/
 #include "../include/common.h"
 /******************************Function Declaration******************************/
-extern ERROR_TYPE wswReadPrsure(int*);
+extern ERROR_TYPE ReadPressure(int*);
 
 #endif /*__PRESSURE_SENSOR_H__*/

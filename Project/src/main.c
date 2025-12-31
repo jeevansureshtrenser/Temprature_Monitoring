@@ -35,36 +35,36 @@ int main(int argc, char *argv[])
 
     if(ExtractArgumentlist(argc, argv) != NO_ERR)
     {
-        printMessage(INFO, "System Shut down!");
+        PrintMessage(INFO, "System Shut down!");
         return 0;
     }
 
     // Create thread for Polling
     if ((aiThreadReturn = pthread_create(&pollingthread, NULL, wvdPollingThread, &iPollThreadID)) == SUCCESS) 
     {
-        printMessage(INFO, "Polling Thread created successfully");
+        PrintMessage(INFO, "Polling Thread created successfully");
         // Create thread for processing
         if ((aiThreadReturn = pthread_create(&process_thread, NULL, wvdProcessingThread, &iProcessThreadID)) == SUCCESS)
         {
-            printMessage(INFO, "Processing Thread created successfully");
+            PrintMessage(INFO, "Processing Thread created successfully");
             // Wait for both threads to finish 
             pthread_join(pollingthread, NULL);
             pthread_join(process_thread, NULL);
         }
         else
         {
-            printMessage(INVALID, "Processing Thread creation failed");
-            printErrInfo(aiThreadReturn);
+            PrintMessage(INVALID, "Processing Thread creation failed");
+            PrintErrInfo(aiThreadReturn);
         }
        
     }
     else
     {
-            printMessage(INVALID, "Polling Thread creation failed");
-            printErrInfo(aiThreadReturn);
+            PrintMessage(INVALID, "Polling Thread creation failed");
+            PrintErrInfo(aiThreadReturn);
     }
 
-    printMessage(INFO, "Thread creation failed! System Shut down!");
+    PrintMessage(INFO, "Thread creation failed! System Shut down!");
     return 0;
 }
 

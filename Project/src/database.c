@@ -14,15 +14,15 @@
 
 dataBase_t *database_node_t = NULL;
 
-ERROR_TYPE ucCheck_and_update_node(CommonDatabase *astCommonDatabase);
-ERROR_TYPE wstRetrive_data_node(PARAMETER_TYPE param_t, CommonDatabase *astCommonDatabase);
+ERROR_TYPE CheckAndUpdateDataNode(CommonDatabase *astCommonDatabase);
+ERROR_TYPE RetriveDataNode(PARAMETER_TYPE param_t, CommonDatabase *astCommonDatabase);
 /**********************************************************************
-* Function name     : create_node
+* Function name     : CreateNewDataNode
 * Description       : to create new node to data table
 * Arguments         : CommonDatabase *astCommonDatabase - hold the value of sensor
 * Return type       : dataBase_t - return newly created node
 *************************************************************************/
-dataBase_t* create_node(CommonDatabase *astCommonDatabase)
+dataBase_t* CreateNewDataNode(CommonDatabase *astCommonDatabase)
 {
     dataBase_t *database_newnode_t = (dataBase_t*)malloc(sizeof(dataBase_t));
     if(database_newnode_t == NULL)
@@ -39,12 +39,12 @@ dataBase_t* create_node(CommonDatabase *astCommonDatabase)
 }
 
 /**********************************************************************
-* Function name     : check_and_update_node
+* Function name     : CheckAndUpdateDataNode
 * Description       : to check if node is there and update it
 * Arguments         : CommonDatabase *astCommonDatabase - hold the value of sensor
 * Return type       : uint8_t - return succes or error value
 *************************************************************************/
-ERROR_TYPE ucCheck_and_update_node(CommonDatabase *astCommonDatabase)
+ERROR_TYPE CheckAndUpdateDataNode(CommonDatabase *astCommonDatabase)
 {
     ERROR_TYPE errVal = NO_ERR;
     unsigned char ucDataNodeFound = DEF_CLEAR;
@@ -59,7 +59,7 @@ ERROR_TYPE ucCheck_and_update_node(CommonDatabase *astCommonDatabase)
     pthread_mutex_lock(&g_pthreadlock);
     if(database_node_t == NULL)
     {
-        database_node_t = create_node(astCommonDatabase);
+        database_node_t = CreateNewDataNode(astCommonDatabase);
         if(database_node_t == NULL)
         {
             errVal = ERRCREATN;
@@ -87,7 +87,7 @@ ERROR_TYPE ucCheck_and_update_node(CommonDatabase *astCommonDatabase)
 
         if(ucDataNodeFound == DEF_CLEAR)
         {
-            dataBase_t* new_node = create_node(astCommonDatabase);
+            dataBase_t* new_node = CreateNewDataNode(astCommonDatabase);
             if(new_node == NULL)
             {
                 errVal = ERRCREATN;
@@ -104,12 +104,12 @@ ERROR_TYPE ucCheck_and_update_node(CommonDatabase *astCommonDatabase)
 }
 
 /**********************************************************************
-* Function name     : check_and_update_node
+* Function name     : RetriveDataNode
 * Description       : to check if node is there and update it
 * Arguments         : CommonDatabase *astCommonDatabase - hold the value of sensor
 * Return type       : uint8_t - return succes or error value
 *************************************************************************/
-ERROR_TYPE wstRetrive_data_node(PARAMETER_TYPE param_t, CommonDatabase *astCommonDatabase)
+ERROR_TYPE RetriveDataNode(PARAMETER_TYPE param_t, CommonDatabase *astCommonDatabase)
 {
     if(astCommonDatabase == NULL)
     {

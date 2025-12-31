@@ -22,13 +22,13 @@ static PollingThreadConfig wstPollingThreadConfig[] =
 {  
     {
         PARAM_TEMP,
-        wswReadTemp,
+        ReadTemp,
         POLLING_TEMP_INTERVAL,
         0
     },
     {
         PARAM_PRESSURE,
-        wswReadPrsure,
+        ReadPressure,
         POLLING_PRSSR_INTERVAL,
         0
     }
@@ -54,7 +54,7 @@ void* wvdPollingThread(void *arg)
     CommonDatabase astCommonDatabase;
     if(arg == NULL)
     {
-        printMessage(ERROR, "Polling thread arg is NULL");
+        PrintMessage(ERROR, "Polling thread arg is NULL");
         return NULL;
     }
     else
@@ -65,7 +65,7 @@ void* wvdPollingThread(void *arg)
     aiPollConfgSize = sizeof(wstPollingThreadConfig) / sizeof(wstPollingThreadConfig[0]);
     if(aiPollConfgSize == DEF_CLEAR)
     {
-        printMessage(ERROR, "Polling thread config size is zero");
+        PrintMessage(ERROR, "Polling thread config size is zero");
         return NULL;
     }
     else
@@ -88,19 +88,19 @@ void* wvdPollingThread(void *arg)
                     (void)memset(&astCommonDatabase, DEF_CLEAR, sizeof(CommonDatabase));
                     astCommonDatabase.iReadVal = aiReadVal;
                     astCommonDatabase.param_t = wstPollingThreadConfig[aiPollConfigCount].param_t;
-                    aiReadSts = ucCheck_and_update_node(&astCommonDatabase);
+                    aiReadSts = CheckAndUpdateDataNode(&astCommonDatabase);
                     if(aiReadSts == NO_ERR)
                     {
                         wstPollingThreadConfig[aiPollConfigCount].wiLastPollingTime = current_polltime_sec;
                     }
                     else
                     {
-                        printMessage(ERROR, "Error updating database!");
+                        PrintMessage(ERROR, "Error updating database!");
                     }
                 }
                 else
                 {
-                    printMessage(INVALID, "Sensor read Error!");
+                    PrintMessage(INVALID, "Sensor read Error!");
                 }
 
             }

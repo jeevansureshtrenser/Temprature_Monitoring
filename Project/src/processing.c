@@ -52,7 +52,7 @@ void* wvdProcessingThread(void *arg);
                         const char* message - sensor warnings
 * Return type       :   void
 ********************************************************************************/
-void printinfo(WARNING_TYPE warningType_t, CommonDatabase *astCommonDatabase, const char* message)
+void Printinfo(WARNING_TYPE warningType_t, CommonDatabase *astCommonDatabase, const char* message)
 {
     char *cMessage = (char*)malloc(MESSAGE_BUFFER_SIZE);
     if(cMessage != NULL)
@@ -71,7 +71,7 @@ void printinfo(WARNING_TYPE warningType_t, CommonDatabase *astCommonDatabase, co
                     default             : /* No process */
                         break;
                 }
-                printMessage(warningType_t,(const char*)cMessage);
+                PrintMessage(warningType_t,(const char*)cMessage);
 
             }
             else
@@ -133,13 +133,14 @@ ERROR_TYPE CheckThresholdRange(CommonDatabase *astCommonDatabase, int aiPrcsConf
     return errVal;
 }
 /*********************************************************************************
-* Function name     : wvdPollingThread
-* Description       : thread for polling the temperature and 
+* Function name     : ProcessDataNode
+* Description       : Process the data node for temperature and
 *                     pressure value periodically
-* Arguments         : void *arg - thread id
-* Return type       : void
+* Arguments         : CommonDatabase *astCommonDatabase - hold read value
+                        int aiPrcsConfigCount - index of global structure ProcessThreadConfig
+* Return type       : ERROR_TYPE - return errotype, if 0 NO_ERROR
 ***********************************************************************************/
-ERROR_TYPE wubProcessData(CommonDatabase *astCommonDatabase, int aiPrcsConfigCount)
+ERROR_TYPE ProcessDataNode(CommonDatabase *astCommonDatabase, int aiPrcsConfigCount)
 {
     ERROR_TYPE errVal = NO_ERR;
     if(astCommonDatabase == NULL)
@@ -157,7 +158,7 @@ ERROR_TYPE wubProcessData(CommonDatabase *astCommonDatabase, int aiPrcsConfigCou
         {
             if( g_ubDebugMode != DEF_CLEAR)
             {
-                printinfo(DEBUG, astCommonDatabase, " ");
+                Printinfo(DEBUG, astCommonDatabase, " ");
             }
             else
             {
@@ -167,20 +168,19 @@ ERROR_TYPE wubProcessData(CommonDatabase *astCommonDatabase, int aiPrcsConfigCou
         }
         else
         {
-            printinfo(WARNING, astCommonDatabase, "out of threshold range!");
+            Printinfo(WARNING, astCommonDatabase, "out of threshold range!");
         }
     }
     else
     {
         errVal = ERRINVALID;
-        printinfo(WARNING, astCommonDatabase, "Sensor read Over bound!");
+        Printinfo(WARNING, astCommonDatabase, "Sensor read Over bound!");
     }
     return errVal;
 }
 /************************************************************
-* Function name     : wvdPollingThread
-* Description       : thread for polling the temperature and 
-*                     pressure value periodically
+* Function name     : wvdProcessingThread
+* Description       : thread for processing the temperature and pressure value periodically
 * Arguments         : void *arg - thread id
 * Return type       : void
 **************************************************************/
@@ -196,7 +196,7 @@ void* wvdProcessingThread(void *arg)
 
     if(arg == NULL)
     {
-        printMessage(ERROR, "Processing thread arg is NULL");
+        PrintMessage(ERROR, "Processing thread arg is NULL");
         return NULL;
     }
     else
@@ -206,7 +206,7 @@ void* wvdProcessingThread(void *arg)
     aiProcessConfgSize = sizeof(wstProcessThreadConfig) / sizeof(wstProcessThreadConfig[0]);
     if(aiProcessConfgSize == DEF_CLEAR)
     {
-        printMessage(ERROR, "Processing thread config size is zero");
+        PrintMessage(ERROR, "Processing thread config size is zero");
         return NULL;
     }
     else
@@ -226,22 +226,22 @@ void* wvdProcessingThread(void *arg)
                 >= wstProcessThreadConfig[aiPrcsConfigCount].wiCheckingTime)
             {
                 (void)memset(&astCommonDatabase, DEF_CLEAR, sizeof(CommonDatabase));
-                err_t = wstRetrive_data_node(wstProcessThreadConfig[aiPrcsConfigCount].param_t, &astCommonDatabase);
+                err_t = RetriveDataNode(wstProcessThreadConfig[aiPrcsConfigCount].param_t, &astCommonDatabase);
                 if(err_t == NO_ERR)
                 {
-                    err_t = wubProcessData(&astCommonDatabase, aiPrcsConfigCount);
+                    err_t = ProcessDataNode(&astCommonDatabase, aiPrcsConfigCount);
                     if(err_t == NO_ERR)
                     {
                         wstProcessThreadConfig[aiPrcsConfigCount].wiLastCheckTime = lCurrent_processtime_sec;
                     }
                     else
                     {
-                        printMessage(WARNING,"Error processing sensor data!");
+                        PrintMessage(WARNING,"Error processing sensor data!");
                     }
                 }
                 else
                 {
-                    printMessage(WARNING,"Error retrieving data from database!");
+                    PrintMessage(WARNING,"Error retrieving data from database!");
                 }
             }
             else
